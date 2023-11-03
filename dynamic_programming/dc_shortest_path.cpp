@@ -1,8 +1,10 @@
 /**
  * Dynamic Programming (tabulation) of shortest-path problem
- * Demo for CSCI 235 - Software Design and Analysis course at Hunter College
+ * Demo for CSCI 235 - Software Design and Analysis 2 course at Hunter College
  * This demo is meant to supplement the lecture and follows the lecture example
  * for pedagogical purposes. 
+ * This example assumes we have not yest discussed more advanced data structures such as map and multimap,
+ * thus it uses vectors to represent the graph and shortest-path table
 */
 
 #include<iostream>
@@ -16,40 +18,42 @@ enum node {S, C, A, B, D, E};
 int shortestPath(std::vector<std::vector<int>> adj, node s, node e)
 {
     int n = adj.size(); //the number of nodes
-    std::vector<std::vector<int>> shortest_paths(n, std::vector<int>(n, -1)); //the shortest paths lookup table
+    std::vector<int> shortest_paths(n, -1); //the shortest paths lookup table
 
-    //populate the shortest paths lookup table from S (node 0) to E (node n-1) by computing
+    //populate the shortest paths lookup table  by computing solutions to subproblems:
     // sol(S) = min{sol(A) + d(S,A), sol(C) + d(S,C)}
-    // tabulating from smallest problem bottom up
-    // we know that sol(E)  = 0 (no cost form destination to itself)
-    shortest_paths[n-1][n-1]=0;
+    // but do so tabulating from smallest problem, bottom up (or backwards)
 
-    for(int i = e-1; i >= s; i--) // consider each node (each row in adj) starting one level up from destination
+    // we know that sol(E)  = 0 (no cost form destination to itself)
+    shortest_paths[n-1]=0;
+
+    //consider each node (each row in adj) starting one level up from destination (e-1)
+    for(int i = e-1; i >= s; i--) 
     {
-        int min_path = std::numeric_limits<int>::max(); //initialize min_path to this node, to infinity
+        //initialize min_path to this node, to infinity
+        int min_path = std::numeric_limits<int>::max(); 
         
         //consider every other node working backwards
         //this assumes that nodes are ordered such that there are no edges from node i to any node j < i
         for(int j = e; j > i; j--) 
         {
             if(adj[i][j] > 0) //if there is an edge from the current node to another node
-                min_path = std::min(min_path,(adj[i][j] + shortest_paths[j][j]));   
+                min_path = std::min(min_path,(adj[i][j] + shortest_paths[j]));   
         }
         //store the shortest path for this node in shortest_paths for node i
-        shortest_paths[i][i] = min_path;
+        shortest_paths[i] = min_path;
     }
 
     //output the shortest_paths matrix
     std::cout << "Shortest Paths lookup table" << std::endl;
     for(int i = 0; i < n; i++)
     {
-        for(int j = 0; j < n; j++)
-            std::cout << shortest_paths[i][j] << " " ;
+        std::cout << shortest_paths[i] << " " ;
     
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 
-    return shortest_paths[s][s];  
+    return shortest_paths[s];  
 
 }
 
@@ -86,7 +90,10 @@ int main()
         std::cout << std::endl;
     }
 
-    std::cout << shortestPath(adj,S,E) << std::endl;
+    std::cout << std::endl;
+
+    int shortest_path = shortestPath(adj,S,E);
+    std::cout << std::endl << "The shortest path from origin to destination has cost = " << shortest_path << std::endl;
            
 
 }
